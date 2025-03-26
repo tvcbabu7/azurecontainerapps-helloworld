@@ -1,0 +1,44 @@
+name: Trigger auto deployment for babucontainerapp
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/babucontainerapp-AutoDeployTrigger-555388de-1794-49d7-a482-7ecfd2e1dc3c.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.BABUCONTAINERAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          registryUrl: babucontainerregistry.azurecr.io
+          registryUsername: ${{ secrets.BABUCONTAINERAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.BABUCONTAINERAPP_REGISTRY_PASSWORD }}
+          containerAppName: babucontainerapp
+          resourceGroup: babu-rg-my-container-apps
+          imageToBuild: babucontainerregistry.azurecr.io/babucontainerapp:${{ github.sha }}
+          
+            
+
+     
+
